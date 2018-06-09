@@ -3,17 +3,18 @@ jsonvalidate
 ============
 
 
-.. image:: https://img.shields.io/pypi/v/jsonvalidate.svg
-        :target: https://pypi.python.org/pypi/jsonvalidate
 
-.. image:: https://travis-ci.org/RobusGauli/jsonvalidate.svg?branch=master
-        :target: https://travis-ci.org/RobusGauli/jsonvalidate
+<a href="https://travis-ci.org/RobusGauli/jsonvalidate">
+    <img src="https://travis-ci.org/RobusGauli/jsonvalidate.svg?branch=master">
+</a>
 
-.. image:: https://readthedocs.org/projects/jsonvalidate/badge/?version=latest
-        :target: https://jsonvalidate.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
+<a href="https://pypi.python.org/pypi/jsonvalidate">
+    <img src="https://img.shields.io/pypi/v/jsonvalidate.svg">
+</a>
 
-
+<a href="https://jsonvalidate.readthedocs.io/en/latest/?badge=latest">
+    <img src="https://readthedocs.org/projects/jsonvalidate/badge/?version=latest">
+</a>
 
 
 JSON validation Schema

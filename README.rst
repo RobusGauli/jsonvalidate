@@ -27,6 +27,7 @@ Features
 --------
 
 ```python
+
 schema = Object({
         'name': String(),
         'age': Integer(enums=[5, 6, 7]),

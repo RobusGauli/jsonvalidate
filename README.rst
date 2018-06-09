@@ -22,7 +22,27 @@ JSON validation Schema
 * Free software: MIT license
 * Documentation: https://jsonvalidate.readthedocs.io.
 
+```python
+schema = Object({
+        'name': String(),
+        'age': Integer(enums=[5, 6, 7]),
+        'address': Object({
+            'permanent': String(),
+            'temporary': String(min_length=3, enums=['asss', 's'])
+        })
+    })
 
+    payload = {
+        'name': 'robus',
+        'age': 342,
+        'address': {
+            'permanent': 'sd',
+            'temporary': 'asss'
+        }
+
+    }
+    print(schema.check(payload))
+```
 Features
 --------
 

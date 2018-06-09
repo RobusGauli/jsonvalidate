@@ -19,6 +19,8 @@ ENUM_ERROR = 'enum_error'
 
 __NOT_AVAILABLE__ = '__NOT_AVAILABLE__'
 
+err = lambda error: ({error.__name__: error.todict()})
+
 class Error(object):
     __name__ = 'Error'
 
@@ -28,20 +30,21 @@ class Error(object):
         return r
 
 class _TypeError(Error):
-    __name__ = 'TypeError'
+    __name__ = TYPE_ERROR
+
 
     def __init__(self, expected, actual):
         self.expected = expected
         self.actual = actual
 
 class KeyMissingError(Error):
-    __name__ = 'KeyMissingError'
+    __name__ = KEY_MISSING_ERROR
 
 class NullError(Error):
-    __name__ = 'NullError'
+    __name__ = NULL_ERROR
 
 class LengthError(Error):
-    __name__ = 'LengthError'
+    __name__ = LENGTH_ERROR
 
     def __init__(
         self,
@@ -54,7 +57,7 @@ class LengthError(Error):
         self.expected_max_length = expected_max_length
 
 class RangeError(Error):
-    __name__ = 'RangeError'
+    __name__ = RANGE_ERROR
 
     def __init__(
         self,
@@ -63,6 +66,13 @@ class RangeError(Error):
     ):
         self.actual_val = actual_val
         self.valid_range = valid_range
+
+class EnumError(Error):
+    __name__ = ENUM_ERROR
+
+    def __init__(self, actual, enums):
+        self.actual = actual
+        self.enums = enums
     
 
 class Contract(object):
@@ -145,17 +155,16 @@ class LengthContract(Contract):
     def check(self, val):
         _err = {}
         if self.min_length and len(val) < self.min_length:
-            _err[LENGTH_ERROR] = LengthError(
+            return True, err(LengthError(
                 actual_length=len(val), 
                 expected_min_length=self.min_length
-            ).todict()
+            ))
             return True, _err
         if self.max_length and len(val) > self.max_length:
-            _err[LENGTH_ERROR] = LengthError(
+            return True, err(LengthError(
                 actual_length=len(val),
                 expected_max_length=self.max_length
-            ).todict()
-            return True, _err
+            ))
         return super(LengthContract, self).check(val)
 
 
@@ -163,25 +172,38 @@ class RangeContract(Contract):
     """Applicable to Integer"""
     def __init__(self, *args, **kwargs):
         self.range = kwargs.get('range', None)
-        if not isinstance(self.range, list):
-            raise TypeError('range argument must be of type list.')
-        
-        if not all(type(val) in [int, float] for val in self.range):
-            raise TypeError('Range argument must be of type int or float')
+        if self.range:
+            if not isinstance(self.range, list):
+                raise TypeError('range argument must be of type list.')
+            
+            if not all(type(val) in [int, float] for val in self.range):
+                raise TypeError('Range argument must be of type int or float')
 
-        if len(self.range) != 2 or self.range[0] >= self.range[1]:
-            raise ValueError('Invalid range argument.')
+            if len(self.range) != 2 or self.range[0] >= self.range[1]:
+                raise ValueError('Invalid range argument.')
             
         super(RangeContract, self).__init__(*args, **kwargs)
     
     def check(self, val):
         if self.range and (val < self.range[0] or val > self.range[1]):
-            _err = {}
-            _err[RANGE_ERROR] = RangeError(val, self.range).todict()
-            return True, _err
+            return True, err(RangeError(val, self.range))
         return super(RangeContract, self).check(val)
         
 
+class EnumContract(Contract):
+    
+    def __init__(self, *args, **kwargs):
+        self.enums = kwargs.get('enums', None)
+    
+        if self.enums:
+            if not isinstance(self.enums, list):
+                raise TypeError('enums must be of type list')
+        super(EnumContract, self).__init__(*args, **kwargs)
+    
+    def check(self, val):
+        if self.enums and val not in self.enums:
+            return True, err(EnumError(val, self.enums))
+        return super(EnumContract, self).check(val)
     
 class _String(Type):
     """Type Contract for String"""
@@ -205,13 +227,13 @@ class _Boolean(Type):
 
     
 
-class String(KeyMissingContract, NullContract, _String, LengthContract):
+class String(KeyMissingContract, NullContract, _String, LengthContract, EnumContract):
     pass
 
-class Integer(KeyMissingContract, NullContract, _Integer, RangeContract):
+class Integer(KeyMissingContract, NullContract, _Integer, RangeContract, EnumContract):
     pass
 
-class Float(KeyMissingContract, NullContract, _Float, LengthContract):
+class Float(KeyMissingContract, NullContract, _Float, RangeContract, EnumContract):
     pass
 
 class Boolean(KeyMissingContract, NullContract, _Boolean):
@@ -252,10 +274,10 @@ class Object(Contract):
 def main():
     schema = Object({
         'name': String(),
-        'age': Integer(range=[3, 100], enums=[5, 6, 7]),
+        'age': Integer(enums=[5, 6, 7]),
         'address': Object({
             'permanent': String(),
-            'temporary': String(min_length=3, enums=['as', 's'])
+            'temporary': String(min_length=3, enums=['asss', 's'])
         })
     })
 
@@ -264,7 +286,7 @@ def main():
         'age': 342,
         'address': {
             'permanent': 'sd',
-            'temporary': 'as'
+            'temporary': 'asss'
         }
 
     }

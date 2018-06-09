@@ -6,7 +6,7 @@
     Module that provides a helper classes for defining schema and validation for json
 """
 import functools
-from collections import defaultdict
+
 
 
 TYPE_ERROR = 'type_error'
@@ -137,19 +137,14 @@ class NullContract(Contract):
 class LengthContract(Contract):
     
     def __init__(self, *args, **kwargs):
-        self.min_length = None
-        self.max_length = None
         
-        try:
-            self.min_length = kwargs.pop('min_length')
-            if not isinstance(self.min_length, int):
-                raise TypeError('min_length must be of type int.')
-            self.max_length = kwargs.pop('max_length')
-            if not isinstance(self.max_length, int):
-                raise TypeError('max_length must be of type int.')
-        except KeyError:
-            pass #ignore the exception and coerce to false
-
+        self.min_length = kwargs.get('min_length')
+        if self.min_length and not isinstance(self.min_length, int):
+            raise TypeError('min_length must be of type int.')
+        self.max_length = kwargs.get('max_length')
+        if self.max_length and not isinstance(self.max_length, int):
+            raise TypeError('max_length must be of type int.')
+        
         super(LengthContract, self).__init__(*args, **kwargs)
     
     def check(self, val):
@@ -253,6 +248,7 @@ class Object(Contract):
         if value is None:
             # that means we have a Null error
             r[NULL_ERROR] = NullError()
+
         if not isinstance(value, dict):
             r['type_error'] = _TypeError(self.__name__, type(value).__name__).todict()
             return True, r
@@ -261,32 +257,69 @@ class Object(Contract):
         for key, contract in self.object_shape.items():
             # grab the value or None
             _val = value.get(key, __NOT_AVAILABLE__)
-            print(contract.__class__.__name__)
             _error, _result = contract.check(_val)
             if _error:
                 error = True
             result[key] = _result
         return error, result
+
+
+class List(Contract):
+    __name__ = 'List'
+
+    def __init__(self, object_shape):
+        if type(object_shape) not in [List, Object, String, Integer, Float, Boolean]:
+            raise TypeError('Must be of valid type of list.')
+        self.object_shape = object_shape
     
+    def check(self, value):
+        if value is None:
+            return True, err(NullError())
+
+        if not isinstance(value, list):
+            return True, err(_TypeError(
+                self.__name__,
+                type(value).__name__
+            ))
+        # if this is the list then we need to traverse the list 
+        error = False
+        result = {}
+        for index, val in enumerate(value):
+            _error, _result = self.object_shape.check(val)
+            if _error:
+                error = True
+            result[index] = _result
+        return error, result
+                
+
             
 
 def main():
     schema = Object({
-        'name': String(),
+        'name': String(max_length=3),
         'age': Integer(enums=[5, 6, 7]),
         'address': Object({
             'permanent': String(),
             'temporary': String(min_length=3, enums=['asss', 's'])
-        })
+        }),
+        'friends': List(Object({
+            'name': String(),
+            'nick_name': String()
+        }))
     })
 
+    list_schema = List(String(max_length=5))
+    list_payload = ['asd', 2, 'asdasdasd']
+
+    # print(list_schema.check(list_payload))
     payload = {
-        'name': 'robus',
-        'age': 342,
+        'name': 'r',
+        'age': 6,
         'address': {
             'permanent': 'sd',
             'temporary': 'asss'
-        }
+        },
+        'friends': [{'name': 'robus', 'nick_name': 'sd'}, 'sasdasdasd']
 
     }
     print(schema.check(payload))

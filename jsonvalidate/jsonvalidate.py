@@ -36,15 +36,19 @@ class Type(Contract):
 
 
 class String(Type):
+    """Type Contract for String"""
     _type = str
 
 class Integer(Type):
+    """Type Contract for Integer"""
     _type = int
 
 class Float(Type):
+    """Type Contract for Float"""
     _type = float
 
 class Boolean(Type):
+    """Type Contract for Boolean"""
     _type = bool
 
 

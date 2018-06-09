@@ -22,6 +22,10 @@ JSON validation Schema
 * Free software: MIT license
 * Documentation: https://jsonvalidate.readthedocs.io.
 
+
+Features
+--------
+
 ```python
 schema = Object({
         'name': String(),
@@ -42,16 +46,4 @@ schema = Object({
 
     }
     print(schema.check(payload))
-```
-Features
---------
-
-* TODO
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+   ```

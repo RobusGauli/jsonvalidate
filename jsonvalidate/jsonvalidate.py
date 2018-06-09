@@ -159,7 +159,6 @@ class LengthContract(Contract):
                 actual_length=len(val), 
                 expected_min_length=self.min_length
             ))
-            return True, _err
         if self.max_length and len(val) > self.max_length:
             return True, err(LengthError(
                 actual_length=len(val),

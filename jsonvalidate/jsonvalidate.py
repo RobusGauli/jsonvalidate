@@ -7,12 +7,16 @@
 """
 
 class Error(object):
-    
+    __name__ = 'Error'
+
     def todict(self):
-        return {'type': self.__class__.__name__, **vars(self)}
+        r = vars(self)
+        r.update({'type': self.__name__})
+        return r
 
 class TypeError(Error):
-    
+    __name__ = 'TypeError'
+
     def __init__(self, expected, actual):
         self.expected = expected
         self.actual = actual

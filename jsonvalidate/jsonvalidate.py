@@ -38,9 +38,25 @@ class KeyMissingError(Error):
 class NullError(Error):
     __name__ = 'NullError'
 
+class LengthError(Error):
+    __name__ = 'LengthError'
+
+    def __init__(
+        self,
+        actual_length = None,
+        expected_min_length = None,
+        expected_max_length = None
+    ):
+        self.actual_length = actual_length
+        self.expected_min_length = expected_min_length
+        self.expected_max_length = expected_max_length
+    
+
 class Contract(object):
     """Descriptor protocol"""    
-    
+    def __init__(*args, **kwargs):
+        pass
+
     def check(self, val):
         return False, None
 
@@ -49,11 +65,13 @@ class Type(Contract):
     __name__ = 'Type'
     _type = None
 
-    def __init__(self, optional=False):
-        self.optional = optional
+    def __init__(self, *args, **kwargs):
+        self.nullable = kwargs.get('nullable', False)
+        super(Type, self).__init__(*args, **kwargs)
+
     
     def check(self, val):
-        if not isinstance(val, self._type):
+        if not self.nullable and not isinstance(val, self._type):
             return True, _TypeError(self.__name__, type(val).__name__).todict()
         return super().check(val)
         
@@ -77,6 +95,51 @@ class KeyMissingContract(Contract):
             return True, _err
         return super(KeyMissingContract, self).check(val)
 
+class NullContract(Contract):
+    
+    def __init__(self, *args, **kwargs):
+        # pop the nullable key from the kwargs
+        self.nullable = kwargs.get('nullable', False)
+        
+        super(NullContract, self).__init__(*args, **kwargs)
+    
+    def check(self, val):
+        _err = {}
+        if not self.nullable and val is None:
+            _err[NULL_ERROR] = NullError().todict()
+            return True, _err
+        return super(NullContract, self).check(val)
+    
+class LengthContract(Contract):
+    
+    def __init__(self, *args, **kwargs):
+        self.min_length = None
+        self.max_length = None
+
+        try:
+            self.min_length = kwargs.pop('min_length')
+            if not isinstance(self.min_length, int):
+                raise TypeError('min_length must be of type int.')
+            self.max_length = kwargs.pop('max_length')
+            if not isinstance(self.max_length, int):
+                raise TypeError('max_length must be of type int.')
+        except:
+            pass
+        
+        super(LengthContract, self).__init__(*args, **kwargs)
+    
+    def check(self, val):
+        _err = {}
+        if self.min_length and len(val) < self.min_length:
+            _err[LENGTH_ERROR] = LengthError(actual_length=len(val), expected_min_length=self.min_length)
+            return True, _err
+        if self.max_length and len(val) > self.max_length:
+            _err[LENGTH_ERROR] = LengthError(
+                actual_length=len(val),
+                expected_max_length=self.max_length
+            )
+            return True, _err
+        return super(LengthContract, self).check(val)
 class _String(Type):
     """Type Contract for String"""
     __name__ = 'String'
@@ -98,36 +161,17 @@ class _Boolean(Type):
     _type = bool
 
     
-# def evaluate_key_error(func):
-#     @functools.wraps(func)
-#     def wrapper(self, val):
-#         error_dict = {}
-#         if val == __NOT_AVAILABLE__:
-#             error_dict[KEY_MISSING_ERROR] = KeyMissingError().todict()
-#             return True, error_dict
-#         return func(self, val)
-#     return wrapper
 
-# def evaluate_null_error(func):
-#     @functools.wraps(func)
-#     def wrapper(self, val):
-#         error_dict = {}
-#         if val is None:
-#             error_dict[NULL_ERROR] = NullError().todict()
-#             return True, error_dict
-#         return func(self, val)
-#     return wrapper
-
-class String(KeyMissingContract, _String):
+class String(KeyMissingContract, NullContract, _String):
     pass
 
-class Integer(KeyMissingContract, _Integer):
+class Integer(KeyMissingContract, NullContract, _Integer):
     pass
 
-class Float(KeyMissingContract, _Float):
+class Float(KeyMissingContract, NullContract, _Float):
     pass
 
-class Boolean(KeyMissingContract, _Boolean):
+class Boolean(KeyMissingContract, NullContract, _Boolean):
     pass
 
         
@@ -168,7 +212,7 @@ def main():
         'age': Integer(),
         'address': Object({
             'permanent': String(),
-            'temporary': String(optional=False)
+            'temporary': String(optional=True, nullable=False)
         })
     })
 

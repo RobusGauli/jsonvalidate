@@ -14,6 +14,8 @@ NULL_ERROR = 'null_error'
 KEY_MISSING_ERROR = 'key_missing_error'
 RANGE_ERROR = 'range_error'
 LENGTH_ERROR = 'length_error'
+ENUM_ERROR = 'enum_error'
+
 
 __NOT_AVAILABLE__ = '__NOT_AVAILABLE__'
 
@@ -50,10 +52,22 @@ class LengthError(Error):
         self.actual_length = actual_length
         self.expected_min_length = expected_min_length
         self.expected_max_length = expected_max_length
+
+class RangeError(Error):
+    __name__ = 'RangeError'
+
+    def __init__(
+        self,
+        actual_val,
+        valid_range
+    ):
+        self.actual_val = actual_val
+        self.valid_range = valid_range
     
 
 class Contract(object):
     """Descriptor protocol"""    
+    # pylint: disable=
     def __init__(*args, **kwargs):
         pass
 
@@ -73,7 +87,7 @@ class Type(Contract):
     def check(self, val):
         if not self.nullable and not isinstance(val, self._type):
             return True, _TypeError(self.__name__, type(val).__name__).todict()
-        return super().check(val)
+        return super(Type, self).check(val)
         
         
 class KeyMissingContract(Contract):
@@ -115,7 +129,7 @@ class LengthContract(Contract):
     def __init__(self, *args, **kwargs):
         self.min_length = None
         self.max_length = None
-
+        
         try:
             self.min_length = kwargs.pop('min_length')
             if not isinstance(self.min_length, int):
@@ -123,23 +137,52 @@ class LengthContract(Contract):
             self.max_length = kwargs.pop('max_length')
             if not isinstance(self.max_length, int):
                 raise TypeError('max_length must be of type int.')
-        except:
-            pass
-        
+        except KeyError:
+            pass #ignore the exception and coerce to false
+
         super(LengthContract, self).__init__(*args, **kwargs)
     
     def check(self, val):
         _err = {}
         if self.min_length and len(val) < self.min_length:
-            _err[LENGTH_ERROR] = LengthError(actual_length=len(val), expected_min_length=self.min_length)
+            _err[LENGTH_ERROR] = LengthError(
+                actual_length=len(val), 
+                expected_min_length=self.min_length
+            ).todict()
             return True, _err
         if self.max_length and len(val) > self.max_length:
             _err[LENGTH_ERROR] = LengthError(
                 actual_length=len(val),
                 expected_max_length=self.max_length
-            )
+            ).todict()
             return True, _err
         return super(LengthContract, self).check(val)
+
+
+class RangeContract(Contract):
+    """Applicable to Integer"""
+    def __init__(self, *args, **kwargs):
+        self.range = kwargs.get('range', None)
+        if not isinstance(self.range, list):
+            raise TypeError('range argument must be of type list.')
+        
+        if not all(type(val) in [int, float] for val in self.range):
+            raise TypeError('Range argument must be of type int or float')
+
+        if len(self.range) != 2 or self.range[0] >= self.range[1]:
+            raise ValueError('Invalid range argument.')
+            
+        super(RangeContract, self).__init__(*args, **kwargs)
+    
+    def check(self, val):
+        if self.range and (val < self.range[0] or val > self.range[1]):
+            _err = {}
+            _err[RANGE_ERROR] = RangeError(val, self.range).todict()
+            return True, _err
+        return super(RangeContract, self).check(val)
+        
+
+    
 class _String(Type):
     """Type Contract for String"""
     __name__ = 'String'
@@ -162,13 +205,13 @@ class _Boolean(Type):
 
     
 
-class String(KeyMissingContract, NullContract, _String):
+class String(KeyMissingContract, NullContract, _String, LengthContract):
     pass
 
-class Integer(KeyMissingContract, NullContract, _Integer):
+class Integer(KeyMissingContract, NullContract, _Integer, RangeContract):
     pass
 
-class Float(KeyMissingContract, NullContract, _Float):
+class Float(KeyMissingContract, NullContract, _Float, LengthContract):
     pass
 
 class Boolean(KeyMissingContract, NullContract, _Boolean):
@@ -209,18 +252,19 @@ class Object(Contract):
 def main():
     schema = Object({
         'name': String(),
-        'age': Integer(),
+        'age': Integer(range=[3, 100], enums=[5, 6, 7]),
         'address': Object({
             'permanent': String(),
-            'temporary': String(optional=True, nullable=False)
+            'temporary': String(min_length=3, enums=['as', 's'])
         })
     })
 
     payload = {
         'name': 'robus',
-        'age': 34,
+        'age': 342,
         'address': {
-            'permanent': 'sd'
+            'permanent': 'sd',
+            'temporary': 'as'
         }
 
     }

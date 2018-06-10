@@ -14,7 +14,9 @@ ENUM_ERROR = 'enum_error'
 # PRIVATE VALUE THAT REPRESENTS MISSING KEY
 __NOT_AVAILABLE__ = '__NOT_AVAILABLE__'
 
-err = lambda error: ({error.__name__: error.todict()})
+
+def err(error): return ({error.__name__: error.todict()})
+
 
 class Error(object):
     __name__ = 'Error'
@@ -24,33 +26,36 @@ class Error(object):
         r.update({'type': self.__name__})
         return r
 
-    def __repr__(self):
-        return '{0}({1})'.format(self.__class__.__name__, ', '.join('{0}={1}'.format(key, val) for key, val in self.todict().items()))
 
 class _TypeError(Error):
     __name__ = TYPE_ERROR
+
     def __init__(self, expected, actual):
         self.expected = expected
         self.actual = actual
 
+
 class KeyMissingError(Error):
     __name__ = KEY_MISSING_ERROR
 
+
 class NullError(Error):
     __name__ = NULL_ERROR
+
 
 class LengthError(Error):
     __name__ = LENGTH_ERROR
 
     def __init__(
         self,
-        actual_length = None,
-        expected_min_length = None,
-        expected_max_length = None
+        actual_length=None,
+        expected_min_length=None,
+        expected_max_length=None
     ):
         self.actual_length = actual_length
         self.expected_min_length = expected_min_length
         self.expected_max_length = expected_max_length
+
 
 class RangeError(Error):
     __name__ = RANGE_ERROR
@@ -63,10 +68,10 @@ class RangeError(Error):
         self.actual_val = actual_val
         self.valid_range = valid_range
 
+
 class EnumError(Error):
     __name__ = ENUM_ERROR
 
     def __init__(self, actual, enums):
         self.actual = actual
         self.enums = enums
-    

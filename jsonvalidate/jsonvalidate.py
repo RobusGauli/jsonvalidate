@@ -221,7 +221,13 @@ class _Boolean(Type):
 
     
 
-class String(KeyMissingContract, NullContract, _String, LengthContract, EnumContract):
+class String(
+    KeyMissingContract,
+    NullContract,
+    _String,
+    LengthContract,
+    EnumContract
+):
     pass
 
 class Integer(KeyMissingContract, NullContract, _Integer, RangeContract, EnumContract):

@@ -266,7 +266,7 @@ class List(Contract):
     __name__ = 'List'
 
     def __init__(self, object_shape):
-        if type(object_shape) not in [List, Object, String, Integer, Float, Boolean]:
+        if type(object_shape) not in [List, Object, StringContract, IntegerContract, FloatContract, BooleanContract]:
             raise TypeError('Must be of valid type of list.')
         self.object_shape = object_shape
 

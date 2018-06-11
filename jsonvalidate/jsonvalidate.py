@@ -208,50 +208,28 @@ class EnumContract(Contract):
         return super(EnumContract, self).check(val)
 
 
-class _String(Type):
+class StringContract(Type):
     """Type Contract for String"""
     __name__ = 'String'
     _type = str
 
 
-class _Integer(Type):
+class IntegerContract(Type):
     """Type Contract for Integer"""
     __name__ = 'Integer'
     _type = int
 
 
-class _Float(Type):
+class FloatContract(Type):
     """Type Contract for Float"""
     __name__ = 'Float'
     _type = float
 
 
-class _Boolean(Type):
+class BooleanContract(Type):
     __name__ = 'Boolean'
     """Type Contract for Boolean"""
     _type = bool
-
-
-class String(
-    KeyMissingContract,
-    NullContract,
-    _String,
-    LengthContract,
-    EnumContract
-):
-    pass
-
-
-class Integer(KeyMissingContract, NullContract, _Integer, RangeContract, EnumContract):
-    pass
-
-
-class Float(KeyMissingContract, NullContract, _Float, RangeContract, EnumContract):
-    pass
-
-
-class Boolean(KeyMissingContract, NullContract, _Boolean):
-    pass
 
 
 class Object(Contract):

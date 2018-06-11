@@ -5,8 +5,6 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~
     Module that provides a helper classes for defining schema and validation for json
 """
-import functools
-
 
 TYPE_ERROR = 'type_error'
 NULL_ERROR = 'null_error'

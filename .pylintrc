@@ -1,0 +1,10 @@
+[MESSAGES CONTROL]
+disable=
+    missing-docstring,
+    too-few-public-methods,
+    no-self-use,
+    unused-argument
+
+[DESIGN]
+# Maximum number of parents for a class (see R0901).
+max-parents=15

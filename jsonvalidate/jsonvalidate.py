@@ -18,20 +18,34 @@ ENUM_ERROR = 'enum_error'
 
 __NOT_AVAILABLE__ = '__NOT_AVAILABLE__'
 
+# pylint: disable=too-few-public-methods
 
-def err(error): return ({error.__name__: error.todict()})
+
+def err(error):
+    """
+        Utility function for returning serializable json payload.
+    """
+    return {error.__name__: error.todict()}
 
 
 class Error(object):
+    """Base class that is subclassed by Concrete error types."""
     __name__ = 'Error'
 
-    def todict(self):
+    def todict(self): # pylint disable=to-few-public-methods
+        """
+            Converts python object to serializable dictionary.
+        """
         r = vars(self)
         r.update({'type': self.__name__})
         return r
 
+    def __repr__(self):
+        return self.__name__
+
 
 class _TypeError(Error):
+    """A class that represents type mismatch"""
     __name__ = TYPE_ERROR
 
     def __init__(self, expected, actual):
@@ -40,40 +54,43 @@ class _TypeError(Error):
 
 
 class KeyMissingError(Error):
+    """A class that represents key mismatch error"""
     __name__ = KEY_MISSING_ERROR
 
 
 class NullError(Error):
+    """A class that represents null error"""
     __name__ = NULL_ERROR
 
-
 class LengthError(Error):
+    """A class that represents length invalidation error"""
     __name__ = LENGTH_ERROR
 
-    def __init__(
-        self,
-        actual_length=None,
-        expected_min_length=None,
-        expected_max_length=None
-    ):
+    def __init__(self, actual_length=None, expected_min_length=None, expected_max_length=None):
+        """
+        :param actual_length
+        :param expected_min_length
+        :param expected_max_lengt
+        """
         self.actual_length = actual_length
         self.expected_min_length = expected_min_length
         self.expected_max_length = expected_max_length
 
-
 class RangeError(Error):
+    """A subclass of error for range validation"""
     __name__ = RANGE_ERROR
 
-    def __init__(
-        self,
-        actual_val,
-        valid_range
-    ):
+    def __init__(self, actual_val, valid_range):
+        """
+        :param actual_val
+        :param valid_range
+        """
         self.actual_val = actual_val
         self.valid_range = valid_range
 
 
 class EnumError(Error):
+    """A class that represents enum invalidation error"""
     __name__ = ENUM_ERROR
 
     def __init__(self, actual, enums):
@@ -81,13 +98,17 @@ class EnumError(Error):
         self.enums = enums
 
 
-class Contract(object):
-    """Descriptor protocol"""
-    # pylint: disable=
-    def __init__(*args, **kwargs):
+# pylint: disable=no-self-use
+class Contract(object):  # pylint: disable=too-few-public-methods
+    """Abstract Base class for both primitives types"""
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, *args, **kwargs):
         pass
 
-    def check(self, val):
+    def check(self, *args):
+        """last method in MRO chain that will eventually return false as an error"""
         return False, None
 
 
@@ -101,6 +122,9 @@ class Type(Contract):
         super(Type, self).__init__(*args, **kwargs)
 
     def check(self, val):
+        """
+            Checks for type mismatch.
+        """
         if not self.nullable and not isinstance(val, self._type):
             return True, _TypeError(self.__name__, type(val).__name__).todict()
         return super(Type, self).check(val)
@@ -118,6 +142,9 @@ class KeyMissingContract(Contract):
         super(KeyMissingContract, self).__init__(*args, **kwargs)
 
     def check(self, val):
+        """
+            Checks for key mismatch
+        """
         _err = {}
         _err[KEY_MISSING_ERROR] = KeyMissingError().todict()
         if not self.optional and val == __NOT_AVAILABLE__:
@@ -126,7 +153,7 @@ class KeyMissingContract(Contract):
 
 
 class NullContract(Contract):
-
+    """A Null Contract class that implements check method for nullable value"""
     def __init__(self, *args, **kwargs):
         # pop the nullable key from the kwargs
         self.nullable = kwargs.get('nullable', False)
@@ -134,6 +161,7 @@ class NullContract(Contract):
         super(NullContract, self).__init__(*args, **kwargs)
 
     def check(self, val):
+        """Checks if the value is null and delegate the method call to next method in MRO"""
         _err = {}
         if not self.nullable and val is None:
             _err[NULL_ERROR] = NullError().todict()
@@ -243,15 +271,15 @@ class Object(Contract):
 
     def check(self, value):
         # make sure that val of type is of dict
-        r = {}
         if value is None:
             # that means we have a Null error
-            r[NULL_ERROR] = NullError()
+            return True, err(NullError())
 
         if not isinstance(value, dict):
-            r['type_error'] = _TypeError(
-                self.__name__, type(value).__name__).todict()
-            return True, r
+            return True, err(_TypeError(
+                self.__name__,
+                type(value).__name__
+            ))
         error = False
         result = {}
         for key, contract in self.object_shape.items():

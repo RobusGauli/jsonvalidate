@@ -6,6 +6,8 @@
     Module that provides a helper classes for defining schema and validation for json
 """
 
+import six
+
 TYPE_ERROR = 'type_error'
 NULL_ERROR = 'null_error'
 KEY_MISSING_ERROR = 'key_missing_error'
@@ -209,13 +211,13 @@ class EnumContract(Contract):
 class StringContract(Type):
     """Type Contract for String"""
     __name__ = 'String'
-    _type = str
+    _type = six.string_types
 
 
 class IntegerContract(Type):
     """Type Contract for Integer"""
     __name__ = 'Integer'
-    _type = int
+    _type = six.integer_types
 
 
 class FloatContract(Type):
@@ -266,7 +268,8 @@ class List(Contract):
     __name__ = 'List'
 
     def __init__(self, object_shape):
-        if type(object_shape) not in [List, Object, StringContract, IntegerContract, FloatContract, BooleanContract]:
+        print(type(object_shape))
+        if not isinstance(object_shape, Contract):
             raise TypeError('Must be of valid type of list.')
         self.object_shape = object_shape
 
@@ -288,38 +291,3 @@ class List(Contract):
                 error = True
             result[index] = _result
         return error, result
-
-
-def main():
-    schema = Object({
-        'name': String(max_length=3),
-        'age': Integer(enums=[5, 6, 7]),
-        'address': Object({
-            'permanent': String(),
-            'temporary': String(min_length=3, enums=['asss', 's'])
-        }),
-        'friends': List(Object({
-            'name': String(),
-            'nick_name': String()
-        }))
-    })
-
-    list_schema = List(String(max_length=5))
-    list_payload = ['asd', 2, 'asdasdasd']
-
-    # print(list_schema.check(list_payload))
-    payload = {
-        'name': 'r',
-        'age': 6,
-        'address': {
-            'permanent': 'sd',
-            'temporary': 'asss'
-        },
-        'friends': [{'name': 'robus', 'nick_name': 'sd'}, 'sasdasdasd']
-
-    }
-    print(schema.check(payload))
-
-
-if __name__ == '__main__':
-    main()

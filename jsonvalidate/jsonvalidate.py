@@ -268,7 +268,6 @@ class List(Contract):
     __name__ = 'List'
 
     def __init__(self, object_shape):
-        print(type(object_shape))
         if not isinstance(object_shape, Contract):
             raise TypeError('Must be of valid type of list.')
         self.object_shape = object_shape

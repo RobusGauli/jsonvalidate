@@ -1,5 +1,5 @@
 
-# JSON schema validation
+# JSON Validation Schema for all.
 
 
 

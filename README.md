@@ -1,5 +1,5 @@
 
-# JSON Validation Schema for all.
+# JSON Validation Schema for sane "reason"
 
 
 

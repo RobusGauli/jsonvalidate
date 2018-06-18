@@ -163,7 +163,7 @@ class NullContract(Contract):
     def check(self, val):
         """Checks if the value is null and delegate the method call to next method in MRO"""
         _err = {}
-        if not self.nullable and val is None:
+        if not self.nullable and not val:
             _err[NULL_ERROR] = NullError().todict()
             return True, _err
         return super(NullContract, self).check(val)

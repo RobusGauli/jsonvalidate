@@ -24,8 +24,8 @@ JSON validation Schema
 * Documentation: https://jsonvalidate.readthedocs.io.
 
 
-Features
---------
+Features 
+------------
 
 ```python
 

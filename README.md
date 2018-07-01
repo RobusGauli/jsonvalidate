@@ -17,11 +17,11 @@
 </a>
 
 
-JSON validation Schema
+JSON Validation Schema
 
 
-* Free software: MIT license
-* Documentation: https://jsonvalidate.readthedocs.io.
+* Free software:  MIT license
+* Documentation:  https://jsonvalidate.readthedocs.io.
 
 
 Features 

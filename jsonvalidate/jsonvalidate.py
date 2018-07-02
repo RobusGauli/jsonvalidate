@@ -16,7 +16,7 @@ LENGTH_ERROR = 'length_error'
 ENUM_ERROR = 'enum_error'
 
 
-__NOT_AVAILABLE__ = '__NOT_AVAILABLE__'
+__NOT_AVAILABLE__ = 2
 
 # pylint: disable=too-few-public-methods
 
@@ -147,6 +147,8 @@ class KeyMissingContract(Contract):
         """
         _err = {}
         _err[KEY_MISSING_ERROR] = KeyMissingError().todict()
+        if self.optional and val == __NOT_AVAILABLE__:
+            return False, None
         if not self.optional and val == __NOT_AVAILABLE__:
             return True, _err
         return super(KeyMissingContract, self).check(val)
@@ -285,6 +287,7 @@ class Object(Contract):
         for key, contract in self.object_shape.items():
             # grab the value or None
             _val = value.get(key, __NOT_AVAILABLE__)
+            print(_val)
             _error, _result = contract.check(_val)
             if _error:
                 error = True

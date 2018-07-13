@@ -1,5 +1,5 @@
 
-# JSON Validation Schema 
+# JSON Validation Schema
 
 
 
@@ -24,28 +24,32 @@ JSON Validation Schema
 * Documentation:  https://jsonvalidate.readthedocs.io.
 
 
-Features 
+Features
 ------------
 
 ```python
+from jsonvalidate import Object, String, Integer
 
 schema = Object({
-        'name': String(),
-        'age': Integer(enums=[5, 6, 7]),
-        'address': Object({
-            'permanent': String(),
-            'temporary': String(min_length=3, enums=['asss', 's'])
-        })
+    'email': String(regex='[^@]+@[^@]+\.[^@]+'),
+    'name': String(),
+    'age': Integer(enums=[5, 6, 7]),
+    'address': Object({
+        'permanent': String(),
+        'temporary': String(min_length=3, enums=['asss', 's'])
     })
+})
 
-    payload = {
-        'name': 'robus',
-        'age': 342,
-        'address': {
-            'permanent': 'sd',
-            'temporary': 'asss'
-        }
-
+payload = {
+    'email': 'robus@example.com',
+    'name': 'robus',
+    'age': 342,
+    'address': {
+        'permanent': 'sd',
+        'temporary': 'asss'
     }
-    print(schema.check(payload))
-   ```
+
+}
+
+print(schema.check(payload))
+```

@@ -118,6 +118,7 @@ class Type(Contract):
     _type = None
 
     def __init__(self, *args, **kwargs):
+        self.optional = kwargs.get('optional', False)
         self.nullable = kwargs.get('nullable', False)
         super(Type, self).__init__(*args, **kwargs)
 
@@ -125,7 +126,7 @@ class Type(Contract):
         """
             Checks for type mismatch.
         """
-        if not self.nullable and not isinstance(val, self._type):
+        if not self.optional and (not self.nullable and not isinstance(val, self._type)):
             return True, _TypeError(self.__name__, type(val).__name__).todict()
         return super(Type, self).check(val)
 
@@ -133,12 +134,7 @@ class Type(Contract):
 class KeyMissingContract(Contract):
 
     def __init__(self, *args, **kwargs):
-        # pop the optional key from the
-        self.optional = None
-        try:
-            self.optional = kwargs.pop('optional')
-        except KeyError:
-            self.optional = False
+        self.optional = kwargs.get('optional', False)
         super(KeyMissingContract, self).__init__(*args, **kwargs)
 
     def check(self, val):

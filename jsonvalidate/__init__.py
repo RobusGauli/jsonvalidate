@@ -4,7 +4,7 @@
 
 __authors__ = """Robus Gauli, Sagar Chamling"""
 __email__ = 'robusgauli@gmail.com, sgr.raee@gmail.com'
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 from .jsonvalidate import (
     List,

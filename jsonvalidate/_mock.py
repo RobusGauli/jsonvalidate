@@ -3,7 +3,7 @@ from jsonvalidate import String, Object, Integer, List
 
 def main():
     schema = Object({
-        'email': String(regex='[^@]+@[^@]+\.[^@]+')
+        'email': String(regex='[^@]+@[^@]+\.[^@]+'),
         'name': String(max_length=3),
         'age': Integer(enums=[5, 6, 7]),
         'address': Object({
@@ -21,7 +21,7 @@ def main():
 
     # print(list_schema.check(list_payload))
     payload = {
-        'email': 'sgr.raee@gmail.com'
+        'email': 'sgr.raee@gmail.com',
         'name': 'r',
         'age': 6,
         'address': {

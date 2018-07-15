@@ -6,6 +6,7 @@
     Module that provides a helper classes for defining schema and validation for json
 """
 
+import re
 import six
 
 TYPE_ERROR = 'type_error'
@@ -14,6 +15,7 @@ KEY_MISSING_ERROR = 'key_missing_error'
 RANGE_ERROR = 'range_error'
 LENGTH_ERROR = 'length_error'
 ENUM_ERROR = 'enum_error'
+REGEX_ERROR = 'regex_error'
 
 
 __NOT_AVAILABLE__ = '__NOT_AVAILABLE__'
@@ -61,6 +63,12 @@ class KeyMissingError(Error):
 class NullError(Error):
     """A class that represents null error"""
     __name__ = NULL_ERROR
+
+
+class RegExError(Error):
+    """A class that represents regex error"""
+    __name__ = REGEX_ERROR
+
 
 class LengthError(Error):
     """A class that represents length invalidation error"""
@@ -191,6 +199,26 @@ class LengthContract(Contract):
                 expected_max_length=self.max_length
             ))
         return super(LengthContract, self).check(val)
+
+
+class RegExContract(Contract):
+
+    def __init__(self, *args, **kwargs):
+        # pop the regex key from the kwargs
+        self.regex = kwargs.get('regex', False)
+
+        super(RegExContract, self).__init__(*args, **kwargs)
+
+    def check(self, val):
+        """Checks if the value match regex and delegate the method call to next method in MRO"""
+        if self.regex:
+            try:
+                regex = r"{}".format(self.regex)
+                if re.compile(regex) and not re.match(regex, val):
+                    return True, err(RegExError())
+            except re.error as error:
+                raise ValueError('invalid regular expression')
+        return super(RegExContract, self).check(val)
 
 
 class RangeContract(Contract):

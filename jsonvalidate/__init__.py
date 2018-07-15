@@ -13,6 +13,7 @@ from .jsonvalidate import (
     EnumContract,
     FloatContract,
     RangeContract,
+    RegExContract,
     LengthContract,
     StringContract,
     IntegerContract,
@@ -24,7 +25,7 @@ from .jsonvalidate import (
 __all__ = ['String', 'Integer', 'Float', 'Boolean', 'Object', 'List']
 
 
-class String(KeyMissingContract, NullContract, StringContract, LengthContract, EnumContract):
+class String(KeyMissingContract, NullContract, StringContract, RegExContract, LengthContract, EnumContract):
     """Composition/Mixins for String"""
     pass
 

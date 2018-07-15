@@ -2,8 +2,8 @@
 
 """Top-level package for jsonvalidate."""
 
-__author__ = """Robus Gauli"""
-__email__ = 'robusgauli@gmail.com'
+__authors__ = """Robus Gauli, Sagar Chamling"""
+__email__ = 'robusgauli@gmail.com, sgr.raee@gmail.com'
 __version__ = '0.1.6'
 
 from .jsonvalidate import (

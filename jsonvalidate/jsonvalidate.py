@@ -187,15 +187,16 @@ class LengthContract(Contract):
         super(LengthContract, self).__init__(*args, **kwargs)
 
     def check(self, val):
-        _err = {}
-        if self.min_length and len(val) < self.min_length:
+        value_length = 0 if val == __NOT_AVAILABLE__ else len(val)
+
+        if self.min_length and value_length < self.min_length:
             return True, err(LengthError(
-                actual_length=len(val),
+                actual_length=value_length,
                 expected_min_length=self.min_length
             ))
-        if self.max_length and len(val) > self.max_length:
+        if self.max_length and value_length > self.max_length:
             return True, err(LengthError(
-                actual_length=len(val),
+                actual_length=value_length,
                 expected_max_length=self.max_length
             ))
         return super(LengthContract, self).check(val)

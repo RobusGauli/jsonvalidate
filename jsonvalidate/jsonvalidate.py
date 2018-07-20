@@ -134,7 +134,7 @@ class Type(Contract):
         """
             Checks for type mismatch.
         """
-        if not self.optional and (not self.nullable and not isinstance(val, self._type)):
+        if not self.optional and (not self.nullable or val) and not isinstance(val, self._type):
             return True, _TypeError(self.__name__, type(val).__name__).todict()
         return super(Type, self).check(val)
 

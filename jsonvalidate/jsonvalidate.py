@@ -134,7 +134,7 @@ class Type(Contract):
         """
             Checks for type mismatch.
         """
-        if not self.optional and (not self.nullable and not isinstance(val, self._type)):
+        if not self.optional and (not self.nullable or val) and not isinstance(val, self._type):
             return True, _TypeError(self.__name__, type(val).__name__).todict()
         return super(Type, self).check(val)
 
@@ -187,7 +187,7 @@ class LengthContract(Contract):
         super(LengthContract, self).__init__(*args, **kwargs)
 
     def check(self, val):
-        value_length = 0 if val == __NOT_AVAILABLE__ else len(val)
+        value_length = 0 if val == __NOT_AVAILABLE__ or val == None else len(val)
 
         if self.min_length and value_length < self.min_length:
             return True, err(LengthError(

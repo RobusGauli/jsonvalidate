@@ -1,5 +1,6 @@
 [MESSAGES CONTROL]
 disable=
+    C0330, # https://github.com/ambv/black/issues/48
     missing-docstring,
     too-few-public-methods,
     no-self-use,
